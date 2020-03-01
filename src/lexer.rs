@@ -35,6 +35,12 @@ impl<'a> Lexer<'a> {
             Some(ch) => match ch {
                 '=' => Token::Assign,
                 '+' => Token::Plus,
+                '-' => Token::Minus,
+                '!' => Token::Bang,
+                '/' => Token::Slash,
+                '*' => Token::Asterisk,
+                '<' => Token::Lt,
+                '>' => Token::Gt,
                 '(' => Token::LParen,
                 ')' => Token::RParen,
                 '{' => Token::LBrace,
@@ -104,7 +110,10 @@ mod lexer_tests {
             x + y;\
         };\
         \
-        let result = add(five, ten);";
+        let result = add(five, ten);\
+        !-/*5;\
+        5 < 10 > 5;\
+        ";
         let mut lexer = Lexer::new(input);
         let expected = [
             Token::Let,
@@ -143,6 +152,18 @@ mod lexer_tests {
             Token::Ident(String::from("ten")),
             Token::RParen,
             Token::SemiColon,
+            Token::Bang,
+            Token::Minus,
+            Token::Slash,
+            Token::Asterisk,
+            Token::Int(String::from("5")),
+            Token::SemiColon,
+            Token::Int(String::from("5")),
+            Token::Lt,
+            Token::Int(String::from("10")),
+            Token::Gt,
+            Token::Int(String::from("5")),
+            Token::SemiColon
         ];
 
         for e in expected.iter() {
