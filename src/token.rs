@@ -11,7 +11,6 @@ pub enum Token {
     // Operators
     Assign,
     Plus,
-    Equal,
 
     // Delimiters
     Comma,
