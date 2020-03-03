@@ -1,4 +1,4 @@
-use crate::token::Token;
+use crate::token::{lookup_ident, Token};
 
 pub struct Lexer<'a> {
     input: &'a str,
@@ -29,12 +29,36 @@ impl<'a> Lexer<'a> {
         self.read_position += 1;
     }
 
-    fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
         let token = match self.ch {
             Some(ch) => match ch {
-                '=' => Token::Assign,
+                '=' => match self.peek_char() {
+                    Some(ch) => match ch {
+                        '=' => {
+                            self.read_char();
+                            Token::Eq
+                        }
+                        _ => Token::Assign,
+                    },
+                    _ => Token::Assign,
+                },
                 '+' => Token::Plus,
+                '-' => Token::Minus,
+                '!' => match self.peek_char() {
+                    Some(ch) => match ch {
+                        '=' => {
+                            self.read_char();
+                            Token::NotEq
+                        }
+                        _ => Token::Bang,
+                    },
+                    _ => Token::Bang,
+                },
+                '/' => Token::Slash,
+                '*' => Token::Asterisk,
+                '<' => Token::Lt,
+                '>' => Token::Gt,
                 '(' => Token::LParen,
                 ')' => Token::RParen,
                 '{' => Token::LBrace,
@@ -44,22 +68,16 @@ impl<'a> Lexer<'a> {
                 _ => {
                     if ch.is_alphabetic() {
                         let literal = self.read_identifier();
-                        if literal == String::from("let") {
-                            return Token::Let;
-                        } else if literal == String::from("fn") {
-                            return Token::Function;
-                        } else {
-                            return Token::Ident(literal);
-                        }
+                        lookup_ident(literal)
                     } else if ch.is_numeric() {
                         let literal = self.read_number();
-                        return Token::Int(literal);
+                        Token::Int(literal)
                     } else {
-                        return Token::Illegal;
+                        Token::Illegal
                     }
                 }
             },
-            None => Token::Illegal,
+            None => Token::Eof,
         };
         self.read_char();
         token
@@ -88,6 +106,14 @@ impl<'a> Lexer<'a> {
             self.read_char()
         }
     }
+
+    fn peek_char(&self) -> Option<char> {
+        if self.read_position >= self.input.len() {
+            None
+        } else {
+            self.input.chars().nth(self.read_position)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -104,7 +130,19 @@ mod lexer_tests {
             x + y;\
         };\
         \
-        let result = add(five, ten);";
+        let result = add(five, ten);\
+        !-/*5;\
+        5 < 10 > 5;\
+        \
+        if (5 < 10) {\
+            return true;
+        } else {\
+            return false;
+        }\
+        \
+        10 == 10;\
+        10 != 9;\
+        ";
         let mut lexer = Lexer::new(input);
         let expected = [
             Token::Let,
@@ -142,6 +180,43 @@ mod lexer_tests {
             Token::Comma,
             Token::Ident(String::from("ten")),
             Token::RParen,
+            Token::SemiColon,
+            Token::Bang,
+            Token::Minus,
+            Token::Slash,
+            Token::Asterisk,
+            Token::Int(String::from("5")),
+            Token::SemiColon,
+            Token::Int(String::from("5")),
+            Token::Lt,
+            Token::Int(String::from("10")),
+            Token::Gt,
+            Token::Int(String::from("5")),
+            Token::SemiColon,
+            Token::If,
+            Token::LParen,
+            Token::Int(String::from("5")),
+            Token::Lt,
+            Token::Int(String::from("10")),
+            Token::RParen,
+            Token::LBrace,
+            Token::Return,
+            Token::True,
+            Token::SemiColon,
+            Token::RBrace,
+            Token::Else,
+            Token::LBrace,
+            Token::Return,
+            Token::False,
+            Token::SemiColon,
+            Token::RBrace,
+            Token::Int(String::from("10")),
+            Token::Eq,
+            Token::Int(String::from("10")),
+            Token::SemiColon,
+            Token::Int(String::from("10")),
+            Token::NotEq,
+            Token::Int(String::from("9")),
             Token::SemiColon,
         ];
 
