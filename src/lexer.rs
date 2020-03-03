@@ -1,4 +1,4 @@
-use crate::token::Token;
+use crate::token::{Token, lookup_ident};
 
 pub struct Lexer<'a> {
     input: &'a str,
@@ -50,13 +50,7 @@ impl<'a> Lexer<'a> {
                 _ => {
                     if ch.is_alphabetic() {
                         let literal = self.read_identifier();
-                        if literal == String::from("let") {
-                            return Token::Let;
-                        } else if literal == String::from("fn") {
-                            return Token::Function;
-                        } else {
-                            return Token::Ident(literal);
-                        }
+                        return lookup_ident(literal);
                     } else if ch.is_numeric() {
                         let literal = self.read_number();
                         return Token::Int(literal);
@@ -113,6 +107,12 @@ mod lexer_tests {
         let result = add(five, ten);\
         !-/*5;\
         5 < 10 > 5;\
+        \
+        if (5 < 10) {\
+            return true;
+        } else {\
+            return false;
+        }\
         ";
         let mut lexer = Lexer::new(input);
         let expected = [
@@ -163,7 +163,24 @@ mod lexer_tests {
             Token::Int(String::from("10")),
             Token::Gt,
             Token::Int(String::from("5")),
-            Token::SemiColon
+            Token::SemiColon,
+            Token::If,
+            Token::LParen,
+            Token::Int(String::from("5")),
+            Token::Lt,
+            Token::Int(String::from("10")),
+            Token::RParen,
+            Token::LBrace,
+            Token::Return,
+            Token::True,
+            Token::SemiColon,
+            Token::RBrace,
+            Token::Else,
+            Token::LBrace,
+            Token::Return,
+            Token::False,
+            Token::SemiColon,
+            Token::RBrace
         ];
 
         for e in expected.iter() {
