@@ -33,10 +33,26 @@ impl<'a> Lexer<'a> {
         self.skip_whitespace();
         let token = match self.ch {
             Some(ch) => match ch {
-                '=' => Token::Assign,
+                '=' => {
+                    if self.peek_char().is_some() && self.peek_char().unwrap() == "=".parse().unwrap() {
+                        let ch = self.ch;
+                        self.read_char();
+                        Token::Eq
+                    } else {
+                        Token::Assign
+                    }
+                },
                 '+' => Token::Plus,
                 '-' => Token::Minus,
-                '!' => Token::Bang,
+                '!' => {
+                    if self.peek_char().is_some() && self.peek_char().unwrap() == "=".parse().unwrap() {
+                        let ch = self.ch;
+                        self.read_char();
+                        Token::NotEq
+                    } else {
+                        Token::Bang
+                    }
+                },
                 '/' => Token::Slash,
                 '*' => Token::Asterisk,
                 '<' => Token::Lt,
@@ -88,6 +104,15 @@ impl<'a> Lexer<'a> {
             self.read_char()
         }
     }
+
+    fn peek_char(&self) -> Option<char> {
+        if self.read_position >= self.input.len() {
+             None
+        } else {
+            self.input.chars().nth(self.read_position)
+        }
+    }
+
 }
 
 #[cfg(test)]
@@ -113,6 +138,9 @@ mod lexer_tests {
         } else {\
             return false;
         }\
+        \
+        10 == 10;\
+        10 != 9;\
         ";
         let mut lexer = Lexer::new(input);
         let expected = [
@@ -180,7 +208,15 @@ mod lexer_tests {
             Token::Return,
             Token::False,
             Token::SemiColon,
-            Token::RBrace
+            Token::RBrace,
+            Token::Int(String::from("10")),
+            Token::Eq,
+            Token::Int(String::from("10")),
+            Token::SemiColon,
+            Token::Int(String::from("10")),
+            Token::NotEq,
+            Token::Int(String::from("9")),
+            Token::SemiColon,
         ];
 
         for e in expected.iter() {
