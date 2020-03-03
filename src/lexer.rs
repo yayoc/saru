@@ -29,7 +29,7 @@ impl<'a> Lexer<'a> {
         self.read_position += 1;
     }
 
-    fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
         let token = match self.ch {
             Some(ch) => match ch {
@@ -68,16 +68,16 @@ impl<'a> Lexer<'a> {
                 _ => {
                     if ch.is_alphabetic() {
                         let literal = self.read_identifier();
-                        return lookup_ident(literal);
+                        lookup_ident(literal)
                     } else if ch.is_numeric() {
                         let literal = self.read_number();
-                        return Token::Int(literal);
+                        Token::Int(literal)
                     } else {
-                        return Token::Illegal;
+                        Token::Illegal
                     }
                 }
             },
-            None => Token::Illegal,
+            None => Token::Eof,
         };
         self.read_char();
         token
