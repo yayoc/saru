@@ -15,7 +15,7 @@ fn main() {
         .lock()
         .read_line(&mut line)
         .expect("Error reading from stdin");
-    let mut lexer = Lexer::new(&mut line);
+    let mut lexer = Lexer::new(&line);
 
     loop {
         let tok = lexer.next_token();
