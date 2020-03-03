@@ -1,4 +1,4 @@
-use crate::token::{Token, lookup_ident};
+use crate::token::{lookup_ident, Token};
 
 pub struct Lexer<'a> {
     input: &'a str,
@@ -33,25 +33,27 @@ impl<'a> Lexer<'a> {
         self.skip_whitespace();
         let token = match self.ch {
             Some(ch) => match ch {
-                '=' => {
-                    if self.peek_char().is_some() && self.peek_char().unwrap() == "=".parse().unwrap() {
-                        let ch = self.ch;
-                        self.read_char();
-                        Token::Eq
-                    } else {
-                        Token::Assign
-                    }
+                '=' => match self.peek_char() {
+                    Some(ch) => match ch {
+                        '=' => {
+                            self.read_char();
+                            Token::Eq
+                        }
+                        _ => Token::Assign,
+                    },
+                    _ => Token::Assign,
                 },
                 '+' => Token::Plus,
                 '-' => Token::Minus,
-                '!' => {
-                    if self.peek_char().is_some() && self.peek_char().unwrap() == "=".parse().unwrap() {
-                        let ch = self.ch;
-                        self.read_char();
-                        Token::NotEq
-                    } else {
-                        Token::Bang
-                    }
+                '!' => match self.peek_char() {
+                    Some(ch) => match ch {
+                        '=' => {
+                            self.read_char();
+                            Token::NotEq
+                        }
+                        _ => Token::Bang,
+                    },
+                    _ => Token::Bang,
                 },
                 '/' => Token::Slash,
                 '*' => Token::Asterisk,
@@ -107,12 +109,11 @@ impl<'a> Lexer<'a> {
 
     fn peek_char(&self) -> Option<char> {
         if self.read_position >= self.input.len() {
-             None
+            None
         } else {
             self.input.chars().nth(self.read_position)
         }
     }
-
 }
 
 #[cfg(test)]
