@@ -68,12 +68,12 @@ impl<'a> Lexer<'a> {
                 _ => {
                     if ch.is_alphabetic() {
                         let literal = self.read_identifier();
-                        lookup_ident(literal)
+                        return lookup_ident(literal);
                     } else if ch.is_numeric() {
                         let literal = self.read_number();
-                        Token::Int(literal)
+                        return Token::Int(literal);
                     } else {
-                        Token::Illegal
+                        return Token::Illegal;
                     }
                 }
             },
