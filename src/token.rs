@@ -52,3 +52,12 @@ pub fn lookup_ident(literal: String) -> Token {
         _ => Token::Ident(literal),
     }
 }
+
+impl Token {
+   pub fn string(&self) -> String {
+       match self {
+           Token::Let => String::from("let"),
+           _ => String::from("")
+       }
+   }
+}

@@ -1,35 +1,28 @@
 use crate::token::Token;
 
-trait Node {
-    fn token_literal() -> String;
-    fn string() -> String;
+pub enum Statement {
+    LetStatement { token: Token, name: String, value: String }
 }
 
-struct Statement {}
-
-struct Expression {}
-
-impl Expression {
-    fn expression_node() {}
+pub struct Program {
+    pub statements: Vec<Statement>,
 }
 
-struct PrefixExpression {
-    token: Token,
-    operator: String,
-    right: Expression,
+impl Statement {
+    pub(crate) fn token_literal(&self) -> String {
+        match self {
+            Statement::LetStatement {token, name, value } => token.string(),
+            _ => String::from("")
+        }
+    }
+
+    fn string(&self) -> String {
+        match self {
+            Statement::LetStatement { token, name, value } => {
+               self.token_literal() + " " + name + " = "  + value + ";"
+            },
+            _ => String::from("")
+        }
+    }
 }
 
-struct Program {
-    statements: Vec<Statement>,
-}
-
-struct Identifier {
-    token: Token,
-    value: String,
-}
-
-struct LetStatement {
-    token: Token,
-    name: Identifier,
-    value: Expression,
-}
